@@ -12,7 +12,7 @@
     2. list all the bugs - done
     3. toggle the completion status of the bug - done
     4. Remove closed bugs. - done
-    5. Display statistics. - 
+    5. Display statistics. -
     6. Search for bugs --
     7. Sort the bugs --
     8. improvies how the bugs are displayed --
@@ -62,8 +62,24 @@
                 }, 0);
             }
 
-
         });
+        bugTracker.filter('closedCount', function ($filter) {
+
+            var builtInFilter = $filter('filter');
+            return function (bugs) {
+                return builtInFilter(bugs, { isClosed: true }).length;
+                //return bugs.reduce(function (counter, bug) {
+                //    return bug.isClosed ? ++counter : counter;
+                //}, 0);
+            }
+        });
+
+        bugTracker.filter('trimText', function () {
+            return function (text, length) {
+                return text.length > parseInt(length) ? text.substr(0, parseInt(length)) + '..' : text;
+            }
+        });
+
     </script>
 
     <style>
@@ -76,6 +92,10 @@
             font-style: italic;
             color: red;
         }
+
+        .filterBug, .statistics, .listBugs {
+            padding: 10px;
+        }
     </style>
 </head>
 
@@ -83,14 +103,19 @@
 <body ng-app="bugTracker" ng-controller="bugController">
 
     <h2> Bug Tracker application </h2>
-    <div class="statistics"><span class="closedCount"> {{getClosedBugCount()}}</span>/ {{bugs.length}}</div>
+    <div class="statistics"><span class="closedCount"> {{ bugs | closedCount}}</span>/ {{bugs.length}}</div>
     <div class="createBug">
         <span> New Bug</span> <input type="text" ng-model="name" id="txtName" /> <input type="button" ng-click="addBug()" value="Add Bug" /> <input type="button" value="Remove closed bug" ng-click="removeClosedBug()" />
 
     </div>
+
+    <div class="filterBug">
+        <span> Criteria: </span> <input type="text" ng-model="searchbug.name" id="txtSearch" /> <span>Closed Bugs </span> <input type="checkbox" ng-model="searchbug.isClosed" /> <input type="button" value="Show All" ng-click="searchbug=undefined" />
+
+    </div>
     <div class="listBugs">
         <ol>
-            <li ng-repeat="bug in bugs" ng-class="{closed: bug.isClosed}" ng-click="toggle(bug)">{{bug.name}} </li>
+            <li ng-repeat="bug in bugs | filter:searchbug" ng-class="{closed: bug.isClosed}" ng-click="toggle(bug)">{{bug.name | trimText:25 }}  </li>
         </ol>
     </div>
 </body>
