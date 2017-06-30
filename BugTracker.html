@@ -27,20 +27,26 @@
         . key(index)
         . clear()
         . length
-        10. display the createdDT of the bugs --
-        11 persis the bugs in the server 
+        10. display the createdDT of the bugs -- done
+        11 persis the bugs in the server
         12 categorize the bugs
         13 view the bugs belong to one particular category
         -->
     <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.6.4/angular.min.js"></script>
+    <script src="moment.js"></script>
     <script type="text/javascript">
+
         var bugTracker = angular.module("bugTracker", []);
+
+        bugTracker.value('momentApi', window.moment);
+
         bugTracker.factory('Bug', function () {
             function Bug(defaults) {
                 defaults = defaults || {};
                 this.name = defaults.name || "";
                 this.isClosed = defaults.isClosed || false;
                 this.id = defaults.id || 0;
+                this.createdAt = defaults.createdAt || new Date();
             }
 
             Bug.prototype.toggle = function () {
@@ -48,6 +54,12 @@
             }
             return Bug;
         });
+
+        bugTracker.filter('toMoment', function (momentApi) {
+            return function (date) {
+                return momentApi(date).fromNow();
+            }
+        })
 
         //bugTracker.factory('BugService', function (Bug) {
 
@@ -148,6 +160,7 @@
                 }
             };
 
+
             //$scope.getClosedBugCount = function () {
 
             //    return $scope.bugs.reduce(function (counter, bug) {
@@ -196,6 +209,11 @@
         .filterBug, .statistics, .listBugs, .sortBug {
             padding: 10px;
         }
+
+        .moment {
+            font-style: italic;
+            color: black;
+        }
     </style>
 </head>
 
@@ -220,7 +238,9 @@
 
     <div class="listBugs">
         <ol>
-            <li ng-repeat="bug in bugs | filter:searchbug | orderBy: orderBy :isDescending" ng-class="{closed: bug.isClosed}" ng-click="toggle(bug)">{{bug.name | trimText}}  </li>
+            <li ng-repeat="bug in bugs | filter:searchbug | orderBy: orderBy :isDescending"
+                ng-class="{closed: bug.isClosed}"
+                ng-click="toggle(bug)">{{bug.name | trimText}} -<span class="moment">{{bug.createdAt | toMoment}}</span></li>
         </ol>
     </div>
 </body>
