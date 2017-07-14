@@ -61,7 +61,226 @@
             }
         })
 
-        //bugTracker.factory('BugService', function (Bug) {
+        bugTracker.provider('BugService', function () {
+
+            var baseUrl = '/bugs/';
+            return {
+
+                $get: function (Bug, $http) {
+                    getAll = function () {
+                        return $http.get(baseUrl).then(function (bugsData) {
+                            var result = bugsData.data.map(function (bug) {
+                                return new Bug(bug);
+                            })
+                            return result;
+                        });
+                    }
+
+                    addBug = function (bug) {
+                        return $http.post(baseUrl, bug).then(function (result) {
+                            return new Bug(result.data);
+                        });
+                    }
+
+                    updateBug = function (bug) {
+                        $http.put(baseUrl + bug.id, bug);
+                    }
+
+                    removeBug = function (bug) {
+                        $http.delete(baseUrl + bug.id);
+                    }
+                    return {
+                        getAll: getAll,
+                        addBug: addBug,
+                        updateBug: updateBug,
+                        removeBug: removeBug
+                    }
+                },
+                setBaseUrl: function (url) {
+                    baseUrl = url;
+                }
+            }
+
+        })
+
+        //bugTracker.service('BugService', function (Bug, $http) {
+
+        //    this.getAll = function () {
+        //        return $http.get('/bugs/').then(function (bugsData) {
+        //            var result = bugsData.data.map(function (bug) {
+        //                return new Bug(bug);
+        //            })
+        //            return result;
+        //        });
+        //    }
+
+        //    this.addBug = function (bug) {
+        //        return $http.post('/bugs/', bug).then(function (result) {
+        //            return new Bug(result.data);
+        //        });
+        //    }
+
+        //    this.updateBug = function (bug) {
+        //        $http.put('/bugs/' + bug.id, bug);
+        //    }
+
+        //    this.removeBug = function (bug) {
+        //        $http.delete('/bugs/' + bug.id);
+        //    }
+
+        //});
+
+        bugTracker.controller("bugController", function ($scope, Bug, BugService) {
+
+            $scope.name = "";
+            $scope.bugs = [];
+            BugService.getAll().then(function (bugs) {
+                $scope.bugs = bugs;
+            });
+            $scope.addBug = function () {
+                BugService.addBug(new Bug({ name: $scope.name, isClosed: false })).then(function (bug) {
+                    $scope.bugs.push(bug);
+
+                });
+            };
+
+            $scope.toggle = function (bug) {
+                bug.toggle();
+                BugService.updateBug(bug);
+            }
+
+            $scope.removeClosedBug = function () {
+                for (var i = $scope.bugs.length - 1; i >= 0; i--) {
+                    if ($scope.bugs[i].isClosed) {
+                        BugService.removeBug($scope.bugs[i])
+                        $scope.bugs.splice(i, 1);
+
+                    }
+                }
+            };
+
+
+            //$scope.getClosedBugCount = function () {
+
+            //    return $scope.bugs.reduce(function (counter, bug) {
+            //        return bug.isClosed ? ++counter : counter;
+            //    }, 0);
+            //}
+
+        });
+
+        bugTracker.filter('closedCount', function ($filter) {
+
+            var builtInFilter = $filter('filter');
+            return function (bugs) {
+                return builtInFilter(bugs, { isClosed: true }).length;
+                //return bugs.reduce(function (counter, bug) {
+                //    return bug.isClosed ? ++counter : counter;
+                //}, 0);
+            }
+        });
+
+        bugTracker.value('defaultTrimText', '20');
+
+        bugTracker.filter('trimText', function (defaultTrimText) {
+
+            return function (text, length) {
+                length = length || defaultTrimText;
+                return text.length > parseInt(length) ? text.substr(0, parseInt(length)) + '..' : text;
+            }
+        });
+
+        bugTracker.provider('dataService', function () {
+
+            var innerFactoryName = 'not yet set by config';
+            return {
+                $get: function () {
+                    return innerFactoryName;
+                },
+                setFactoryName: function (name) {
+                    innerFactoryName = name;
+                }
+            }
+        });
+
+        // services, factories and values and constants
+        bugTracker.run(function (BugService, dataService) {
+            console.log(' In Run function App got initialized ');
+            console.log("dataserviceprovider in run=", dataService);
+        });
+        //providers and constants
+        bugTracker.config(function (dataServiceProvider, BugServiceProvider) {
+            console.log(' In Config function app got configured');
+            console.log("dataserviceprovider in config=", dataServiceProvider);
+            dataServiceProvider.setFactoryName('this value is set by the config phase');
+            BugServiceProvider.setBaseUrl('/issues/');
+        });
+
+
+
+    </script>
+
+    <style>
+        .closedCount {
+            color: red;
+        }
+
+        .closed {
+            text-decoration: line-through;
+            font-style: italic;
+            color: red;
+        }
+
+        .filterBug, .statistics, .listBugs, .sortBug {
+            padding: 10px;
+        }
+
+        .moment {
+            font-style: italic;
+            color: black;
+        }
+    </style>
+</head>
+
+
+<body ng-app="bugTracker" ng-controller="bugController">
+
+    <h2> Bug Tracker application </h2>
+    <div class="statistics"><span class="closedCount"> {{ bugs | closedCount}}</span>/ {{bugs.length}}</div>
+    <div class="createBug">
+        <span> New Bug</span> <input type="text" ng-model="name" id="txtName" /> <input type="button" ng-click="addBug()" value="Add Bug" /> <input type="button" value="Remove closed bug" ng-click="removeClosedBug()" />
+
+    </div>
+
+    <div class="filterBug">
+        <span> Criteria: </span> <input type="text" ng-model="searchbug.name" id="txtSearch" /> <span>Closed Bugs </span> <input type="checkbox" ng-model="searchbug.isClosed" /> <input type="button" value="Show All" ng-click="searchbug=undefined" />
+
+    </div>
+
+    <div class="sortBug">
+        Order By : <input type="text" name="txtOrder" ng-model="orderBy" /> <label>isDecending</label> <input type="checkbox" name="" ng-model="isDescending" />
+    </div>
+
+    <div class="listBugs">
+        <ol>
+            <li ng-repeat="bug in bugs | filter:searchbug | orderBy: orderBy :isDescending"
+                ng-class="{closed: bug.isClosed}"
+                ng-click="toggle(bug)">{{bug.name | trimText}} -<span class="moment">{{bug.createdAt | toMoment}}</span></li>
+        </ol>
+    </div>
+</body>
+</html>
+
+<!--
+1. bugData.json
+2. install npm
+3. npm install -g json-server
+4.  creat a new folder public and move the html files to public folder
+5. json-server bugsData.json
+
+
+
+    //bugTracker.factory('BugService', function (Bug) {
 
         //    var storage = window.localStorage;
         //    var maxId = 0;
@@ -134,154 +353,4 @@
         //    }
 
         //});
-
-        bugTracker.service('BugService', function (Bug, $http) {
-
-            this.getAll = function () {
-                return $http.get('/bugs/').then(function (bugsData) {
-                    var result = bugsData.data.map(function (bug) {
-                        return new Bug(bug);
-                    })
-                    return result;
-                });
-            }
-
-            this.addBug = function (bug) {
-                return $http.post('/bugs/', bug).then(function (result) {
-                    return new Bug(result.data);
-                })
-            }
-
-            this.updateBug = function (bug) {
-                $http.put('/bugs/' + bug.id, bug);
-            }
-
-            this.removeBug = function (bug) {
-                $http.delete('/bugs/' + bug.id);
-            }
-
-        });
-
-        bugTracker.controller("bugController", function ($scope, Bug, BugService) {
-
-            $scope.name = "";
-            $scope.bugs = [];
-            BugService.getAll().then(function (bugs) {
-                $scope.bugs = bugs;
-            });
-            $scope.addBug = function () {
-                BugService.addBug(new Bug({ name: $scope.name, isClosed: false })).then(function (bug) {
-                    $scope.bugs.push(bug);
-
-                });
-            };
-
-            $scope.toggle = function (bug) {
-                bug.toggle();
-                BugService.updateBug(bug);
-            }
-
-            $scope.removeClosedBug = function () {
-                for (var i = $scope.bugs.length - 1; i >= 0; i--) {
-                    if ($scope.bugs[i].isClosed) {
-                        BugService.removeBug($scope.bugs[i])
-                        $scope.bugs.splice(i, 1);
-
-                    }
-                }
-            };
-
-
-            //$scope.getClosedBugCount = function () {
-
-            //    return $scope.bugs.reduce(function (counter, bug) {
-            //        return bug.isClosed ? ++counter : counter;
-            //    }, 0);
-            //}
-
-        });
-
-        bugTracker.filter('closedCount', function ($filter) {
-
-            var builtInFilter = $filter('filter');
-            return function (bugs) {
-                return builtInFilter(bugs, { isClosed: true }).length;
-                //return bugs.reduce(function (counter, bug) {
-                //    return bug.isClosed ? ++counter : counter;
-                //}, 0);
-            }
-        });
-
-        bugTracker.value('defaultTrimText', '20');
-
-        bugTracker.filter('trimText', function (defaultTrimText) {
-
-            return function (text, length) {
-                length = length || defaultTrimText;
-                return text.length > parseInt(length) ? text.substr(0, parseInt(length)) + '..' : text;
-            }
-        });
-
-
-
-    </script>
-
-    <style>
-        .closedCount {
-            color: red;
-        }
-
-        .closed {
-            text-decoration: line-through;
-            font-style: italic;
-            color: red;
-        }
-
-        .filterBug, .statistics, .listBugs, .sortBug {
-            padding: 10px;
-        }
-
-        .moment {
-            font-style: italic;
-            color: black;
-        }
-    </style>
-</head>
-
-
-<body ng-app="bugTracker" ng-controller="bugController">
-
-    <h2> Bug Tracker application </h2>
-    <div class="statistics"><span class="closedCount"> {{ bugs | closedCount}}</span>/ {{bugs.length}}</div>
-    <div class="createBug">
-        <span> New Bug</span> <input type="text" ng-model="name" id="txtName" /> <input type="button" ng-click="addBug()" value="Add Bug" /> <input type="button" value="Remove closed bug" ng-click="removeClosedBug()" />
-
-    </div>
-
-    <div class="filterBug">
-        <span> Criteria: </span> <input type="text" ng-model="searchbug.name" id="txtSearch" /> <span>Closed Bugs </span> <input type="checkbox" ng-model="searchbug.isClosed" /> <input type="button" value="Show All" ng-click="searchbug=undefined" />
-
-    </div>
-
-    <div class="sortBug">
-        Order By : <input type="text" name="txtOrder" ng-model="orderBy" /> <label>isDecending</label> <input type="checkbox" name="" ng-model="isDescending" />
-    </div>
-
-    <div class="listBugs">
-        <ol>
-            <li ng-repeat="bug in bugs | filter:searchbug | orderBy: orderBy :isDescending"
-                ng-class="{closed: bug.isClosed}"
-                ng-click="toggle(bug)">{{bug.name | trimText}} -<span class="moment">{{bug.createdAt | toMoment}}</span></li>
-        </ol>
-    </div>
-</body>
-</html>
-
-<!--
-1. bugData.json
-2. install npm
-3. npm install -g json-server
-4.  creat a new folder public and move the html files to public folder
-5. json-server bugsData.json
-
-    -->
+     -->
