@@ -1,0 +1,21 @@
+﻿
+<div class="padding-10"> <span>Add a Bug</span> <input type="button" value="Add Bug" onclick="window.location.href='http://localhost:3000/index.html#!/new/'" /></div>
+<div class="padding-10"><span>Remove Closed Bugs: </span>  <input type="button" value="Remove closed bug" ng-click="removeClosedBug()" /></div>
+<div class="filterBug">
+    <span> Criteria: </span> <input type="text" ng-model="searchbug.name" id="txtSearch" /> <span>Closed Bugs </span> <input type="checkbox" ng-model="searchbug.isClosed" /> <input type="button" value="Show All" ng-click="searchbug=undefined" />
+
+</div>
+
+<div class="sortBug">
+    Order By : <input type="text" name="txtOrder" ng-model="orderBy" /> <label>isDecending</label> <input type="checkbox" name="" ng-model="isDescending" />
+</div>
+
+<div class="listBugs">
+    <ol>
+        <li ng-repeat="bug in bugs | filter:searchbug | orderBy: orderBy :isDescending"
+            ng-class="{closed: bug.isClosed}">
+            <strong ng-click="toggle(bug)">  {{bug.name | trimText}} -<span class="moment">{{bug.createdAt | toMoment}}</span></strong>
+            <a href="#!/bugs/{{bug.id}}">..more details</a>
+        </li>
+    </ol>
+</div>

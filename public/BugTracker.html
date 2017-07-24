@@ -103,32 +103,7 @@
 
         })
 
-        //bugTracker.service('BugService', function (Bug, $http) {
-
-        //    this.getAll = function () {
-        //        return $http.get('/bugs/').then(function (bugsData) {
-        //            var result = bugsData.data.map(function (bug) {
-        //                return new Bug(bug);
-        //            })
-        //            return result;
-        //        });
-        //    }
-
-        //    this.addBug = function (bug) {
-        //        return $http.post('/bugs/', bug).then(function (result) {
-        //            return new Bug(result.data);
-        //        });
-        //    }
-
-        //    this.updateBug = function (bug) {
-        //        $http.put('/bugs/' + bug.id, bug);
-        //    }
-
-        //    this.removeBug = function (bug) {
-        //        $http.delete('/bugs/' + bug.id);
-        //    }
-
-        //});
+     
 
         bugTracker.controller("bugController", function ($scope, Bug, BugService) {
 
@@ -350,6 +325,32 @@
 
         //    this.removeBug = function (bug) {
         //        storage.removeItem(bug.id);
+        //    }
+
+        //});
+       //bugTracker.service('BugService', function (Bug, $http) {
+
+        //    this.getAll = function () {
+        //        return $http.get('/bugs/').then(function (bugsData) {
+        //            var result = bugsData.data.map(function (bug) {
+        //                return new Bug(bug);
+        //            })
+        //            return result;
+        //        });
+        //    }
+
+        //    this.addBug = function (bug) {
+        //        return $http.post('/bugs/', bug).then(function (result) {
+        //            return new Bug(result.data);
+        //        });
+        //    }
+
+        //    this.updateBug = function (bug) {
+        //        $http.put('/bugs/' + bug.id, bug);
+        //    }
+
+        //    this.removeBug = function (bug) {
+        //        $http.delete('/bugs/' + bug.id);
         //    }
 
         //});
