@@ -1,0 +1,64 @@
+﻿<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+    <title>BugTracker</title>
+
+    <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.6.4/angular.min.js"></script>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/angular.js/1.4.0/angular-route.min.js"></script>
+    <script src="moment.js"></script>
+    <script>
+
+        var app = angular.module('myApp', []);
+        app.run(function ($rootScope) {
+            $rootScope.name = ' this is the rootscope name';
+        });
+
+        app.controller('appController', function ($scope) {
+
+            $scope.name = 'this is from the controller';
+            $scope.desc = 'this is related to the controller';
+            $scope.greet = function () {
+                console.log('Good morning');
+            };
+        });
+        app.directive('whoAmI', function () {
+            return {
+                restrict: 'AEC',
+                scope: {
+                    name: '@',
+                    desc: '=',
+                    greet: '&'
+                },
+                transclude: true,
+                template: '<div> Hello world  <br/> <span class="content"> -  </span>  <div > {{desc}}</div> <div ng-transclude> </div></div> ',
+                link: function (scope, element, attr) {
+                    console.log(scope); 
+                    element.find('span').html(scope.name);
+                    scope.greet();
+                }
+            }
+        });
+
+
+    </script>
+</head>
+
+<body ng-app="myApp">
+    <!--<div who-am-i name="{{name}}"></div>-->
+    <div ng-controller="appController">
+
+        Name :<input type="text" name="name" ng-model="name" /> <br />
+
+        Desc: <input type="text" name="desc" ng-model="desc" />
+        <div who-am-i name="{{name}}" greet='greet()' desc="desc">
+            <div>
+                this is the inner content
+
+            </div>
+
+        </div>
+    </div>
+</body>
+
+</html>

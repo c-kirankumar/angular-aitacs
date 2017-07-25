@@ -103,7 +103,7 @@
 
         })
 
-     
+
 
         bugTracker.controller("bugController", function ($scope, Bug, BugService) {
 
@@ -191,7 +191,21 @@
             BugServiceProvider.setBaseUrl('/issues/');
         });
 
+        bugTracker.directive('bugsStats', function () {
+            return {
+                replace:true,
+                restrict: 'E',
+                template: '<div class="statistics"><span class="closedCount"> {{ bugs | closedCount}}</span>/ {{bugs.length}}</div>',
+                scope: {
+                    bugs: '='
+                },
+                link: function (scope, element, attr) {
 
+                }
+
+            }
+
+        })
 
     </script>
 
@@ -221,7 +235,7 @@
 <body ng-app="bugTracker" ng-controller="bugController">
 
     <h2> Bug Tracker application </h2>
-    <div class="statistics"><span class="closedCount"> {{ bugs | closedCount}}</span>/ {{bugs.length}}</div>
+    <strong>Statistics :</strong> <bugs-stats bugs="bugs"></bugs-stats>
     <div class="createBug">
         <span> New Bug</span> <input type="text" ng-model="name" id="txtName" /> <input type="button" ng-click="addBug()" value="Add Bug" /> <input type="button" value="Remove closed bug" ng-click="removeClosedBug()" />
 
@@ -243,6 +257,7 @@
                 ng-click="toggle(bug)">{{bug.name | trimText}} -<span class="moment">{{bug.createdAt | toMoment}}</span></li>
         </ol>
     </div>
+
 </body>
 </html>
 
